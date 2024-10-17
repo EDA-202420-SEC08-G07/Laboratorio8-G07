@@ -71,7 +71,7 @@ def setup_unbalanced():
     
     return unbalanced
 
-@handle_not_implemented
+
 def test_new_binary_search_tree():
     empty_bst = bst.new_map()
 
