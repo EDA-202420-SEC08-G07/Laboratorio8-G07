@@ -8,27 +8,33 @@ def new_map():
 
 def put(my_bst, key, value):
     """Inserta una pareja llave-valor en el BST. Si la llave ya existe, reemplaza el valor."""
-    #menor
+    # Caso base -> Raiz = None
     if my_bst['root'] is None:
         my_bst['root'] = bst_nd.new_node(key, value)
+    
+    # Caso recursivo -> Insertar en el arbol
     else:
-        _put(my_bst["root"], key, value)
+        # Menor para la izquierda
+        if key < my_bst['root']['key']:
+            if my_bst['root']['left'] is None:
+                my_bst['root']['left'] = bst_nd.new_node(key, value)
+            else:
+                put(my_bst['root']['left'], key, value)
+                
+        # Mayor para la derecha
+        elif key > my_bst['root']['key']:
+            if my_bst['root']['right'] is None:
+                my_bst['root']['right'] = bst_nd.new_node(key, value)
+            else:
+                put(my_bst['root']['right'], key, value)
+        
+        # Iguales, actualizamos valor
+        elif key == my_bst['root']['key']:
+            pass
+            
     return my_bst
-
-def _put(node, key, value):
-    if key < node['key']:
-        if node['left'] is None:
-            node['left'] = bst_nd.new_node(key, value)
-        else:
-            _put(node['left'], key, value)
-    elif key > node['key']:
-        if node['right'] is None:
-            node['right'] = bst_nd.new_node(key, value)
-        else:
-            _put(node['right'], key, value)
-    else:
-        node['value'] = value
-    node["size"] = 
+           
+        
     
     
         
