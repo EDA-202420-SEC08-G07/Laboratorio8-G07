@@ -1,4 +1,6 @@
 from DataStructures.Tree import bst_node as bst_nd
+from DataStructures.List import single_linked_list as sl
+from DataStructures.List import array_list as al
 def new_map():
     """Crea una tabla de símbolos ordenada basada en un árbol binario de búsqueda (BST) vacía."""
     return {
@@ -58,6 +60,44 @@ def get_node(root, key):
     else: 
         return get_node(root['right'], key)
     
+def remove(my_bst, key):
+    my_bst['root'] = remove_node(my_bst['root'], key)
+    
+def remove_node(root, key):
+    if root is None:
+        return None  
+
+    if key < root['key']:
+        root['left'] = remove_node(root['left'], key)  
+    elif key > root['key']:
+        root['right'] = remove_node(root['right'], key)  
+    else:
+        # Caso 1: Nodo sin hijos (es una hoja)
+        if root['left'] is None and root['right'] is None:
+            return None  
+        
+        # Caso 2: Nodo con solo un hijo
+        elif root['left'] is None:
+            return root['right']  # Reemplazamos el nodo con su hijo derecho
+        elif root['right'] is None:
+            return root['left']  # Reemplazamos el nodo con su hijo izquierdo
+        
+        # Caso 3: Nodo con dos hijos
+        else:
+            # Buscamos el nodo sucesor (el menor del subárbol derecho)
+            sucesor = min_key_nodo(root['right'])
+            sucesor_value = min_key_nodo_value(root['right'])
+            # Reemplazamos los datos del nodo actual con los del sucesor
+            root['key'] = sucesor
+            root['value'] = sucesor_value
+            # Eliminamos el nodo sucesor del subárbol derecho
+            root['right'] = delete_min_nodo(root['right'])
+    
+    # Actualizamos el tamaño del nodo
+    root['size'] = 1 + node_size(root['left']) + node_size(root['right'])
+
+    return root
+    
 def contains(my_bst, key):
     """
     Informa si la llave key se encuentra en la tabla de hash
@@ -108,6 +148,44 @@ def is_empty(my_bst):
     else:
         return True
 
+def key_set(my_bst):
+    """ 
+    Retorna una lista con todas las llaves de la tabla
+
+    Args:
+        my_bst (BST): Bst con la info
+    Returns:
+        Una lista con todas las llaves de la tabla
+    """
+    key_list = al.new_list()  
+    return key_set_tree(my_bst['root'], key_list)  
+
+def key_set_tree(root, key_list):
+    if root is not None:
+        key_set_tree(root['left'], key_list)  
+        al.add_last(key_list, root['key'])  
+        key_set_tree(root['right'], key_list)  
+    return key_list  
+
+def value_set(my_bst):
+    """ 
+    Retorna una lista con todas los values de la tabla
+
+    Args:
+        my_bst (BST): Bst con la info
+    Returns:
+        Una lista con todas los valores de la tabla
+    """
+    value_list = al.new_list()  
+    return value_set_tree(my_bst['root'], value_list)  
+
+def value_set_tree(root, value_list):
+    if root is not None:
+        value_set_tree(root['left'], value_list)  
+        al.add_last(value_list, root['value'])  
+        value_set_tree(root['right'], value_list)  
+    return value_list
+
 def min_key(my_bst):
     """ 
     Retorna la menor llave de la tabla de simbolos
@@ -127,6 +205,18 @@ def min_key_nodo(root):
         return min_key_nodo(root['left'])
     else:
         return root['key']
+def min_key_value(my_bst):
+    if my_bst['root'] is None:
+        return None
+    else: 
+        return min_key_nodo_value(my_bst['root'])
+    
+def min_key_nodo_value(root):
+    if root['left'] is not None:
+        return min_key_nodo(root['left'])
+    else:
+        return root['value']
+    
 
 def max_key(my_bst):
     """ 
@@ -254,4 +344,188 @@ def height_nodo(root):
     
     # La altura del nodo actual es 1 más la altura máxima de sus hijos
     return 1 + max(altura_izq, altura_der)
+
+def floor(my_bst, key):
+    """ 
+    Retorna la llave más grande en la tabla de símbolos que es menor o igual a la llave dada.
+
+    Args:
+        my_bst (BST): El árbol de búsqueda binaria.
+        key (int): La llave de búsqueda.
+
+    Returns:
+        La llave más grande menor o igual a key, o None si no existe.
+    """
+    return floor_node(my_bst['root'], key)
+
+def floor_node(root, key):
+    if root is None:
+        return None  
+    if root['key'] == key:
+        return root['key']
+    if key < root['key']:
+        return floor_node(root['left'], key)  
+    if key > root['key']:
+        pizza = floor_node(root['right'], key)
+        if pizza is not None:
+            return pizza
+        else:
+            return root['key']  
+        
+def ceiling(my_bst, key):
+    """ 
+    Retorna la llave más pequeña en la tabla de símbolos que es mayor o igual a la llave dada.
+
+    Args:
+        my_bst (BST): El árbol de búsqueda binaria.
+        key (int): La llave de búsqueda.
+
+    Returns:
+        La llave más pequeña mayor o igual a key, o None si no existe.
+    """
+    return ceiling_node(my_bst['root'], key)
+
+def ceiling_node(root, key):
+    if root is None:
+        return None 
+    if root['key'] == key:
+        return root['key']
+    if key > root['key']:
+        return ceiling_node(root['right'], key)  
+    if key < root['key']:
+        papu = ceiling_node(root['left'], key)
+        if papu is not None:
+            return papu 
+        else:
+            return root['key'] 
+
+def select(my_bst, pos):
+    """ 
+    Retorna la k-ésima llave más pequeña del árbol de búsqueda.
+
+    Args:
+        my_bst (BST): Árbol de búsqueda binaria.
+        pos (int): Posición de la k-ésima llave más pequeña (0-indexed).
+
+    Returns:
+        La llave correspondiente a la posición `pos` o None si no existe.
+    """
+    return select_node(my_bst['root'], pos)
+
+def select_node(root, pos):
+    if root is None:
+        return None  
+    
+    # Tamaño del subárbol izquierdo
+    izq_tam = node_size(root['left']) if root['left'] else 0
+    if izq_tam == pos:
+        return root['key']
+    elif pos < izq_tam:
+        return select_node(root['left'], pos)
+    else:
+        return select_node(root['right'], pos - izq_tam - 1)
+
+def rank(my_bst, key):
+    """ 
+    Retorna el número de llaves estrictamente menores que `key` en el árbol de búsqueda binaria.
+
+    Args:
+        my_bst (BST): Árbol de búsqueda binaria.
+        key (int): La llave de búsqueda.
+
+    Returns:
+        El número de llaves estrictamente menores que `key`.
+    """
+    return rank_node(my_bst['root'], key)
+
+def rank_node(root, key):
+    if root is None:
+        return 0  
+    if key < root['key']:
+        return rank_node(root['left'], key)
+    # Si la llave buscada es mayor que la llave en el nodo actual, sumamos el tamaño del subárbol izquierdo
+    # (todas las llaves en el subárbol izquierdo son menores) + 1 por la llave actual, y buscamos en el subárbol derecho
+    elif key > root['key']:
+        left_size = node_size(root['left']) if root['left'] else 0
+        return 1 + left_size + rank_node(root['right'], key)
+    # Si la llave buscada es igual a la llave en el nodo actual, el número de llaves menores es el tamaño del subárbol izquierdo
+    else:
+        return node_size(root['left']) if root['left'] else 0
+    
+def keys(my_bst, key_lo, key_hi):
+    """ 
+    Retorna todas las llaves del árbol que se encuentren en el rango [key_lo, key_hi].
+    
+    Args:
+        my_bst (BST): El árbol de búsqueda binaria.
+        key_lo (int): Límite inferior del rango.
+        key_hi (int): Límite superior del rango.
+    
+    Returns:
+        Una lista con las llaves en el rango especificado.
+    """
+    if my_bst is None:
+        return my_bst
+    else: 
+        key_list = al.new_list()
+        return keys_in_range(my_bst['root'], key_lo, key_hi, key_list)
+
+def keys_in_range(root, key_lo, key_hi, key_list):
+    """ 
+    Función recursiva que encuentra todas las llaves en el rango [key_lo, key_hi] en el árbol de búsqueda binaria.
+    
+    Args:
+        root: El nodo raíz del subárbol.
+        key_lo (int): Límite inferior del rango.
+        key_hi (int): Límite superior del rango.
+        key_list (list): Lista donde se almacenan las llaves en el rango.
+    
+    Returns:
+        key_list (list): Lista con las llaves en el rango [key_lo, key_hi].
+    """
+    if root is None:
+        return key_list  # Si el nodo es None, no hay más llaves que agregar
+    # Si la llave actual es mayor que el límite inferior, revisamos el subárbol izquierdo
+    if key_lo < root['key']:
+        keys_in_range(root['left'], key_lo, key_hi, key_list)
+    # Si la llave actual está dentro del rango, la agregamos a la lista
+    if key_lo <= root['key'] <= key_hi:
+        al.add_last(key_list, root['key'])
+    # Si la llave actual es menor que el límite superior, revisamos el subárbol derecho
+    if root['key'] < key_hi:
+        keys_in_range(root['right'], key_lo, key_hi, key_list)
+    
+    return key_list
+
+def values(my_bst, key_lo, key_hi):
+    """ 
+    Retorna todas los values del árbol que se encuentren en el rango [key_lo, key_hi].
+    
+    Args:
+        my_bst (BST): El árbol de búsqueda binaria.
+        key_lo (int): Límite inferior del rango.
+        key_hi (int): Límite superior del rango.
+    
+    Returns:
+        Una lista con los valores en el rango especificado.
+    """
+    if my_bst is None:
+        return my_bst
+    else: 
+        value_list = al.new_list()
+        return values_in_range(my_bst['root'], key_lo, key_hi, value_list)
+
+def values_in_range(root, key_lo, key_hi, value_list):
+    if root is None:
+        return value_list 
+    # Si la llave actual es mayor que el límite inferior, revisamos el subárbol izquierdo
+    if key_lo < root['key']:
+        values_in_range(root['left'], key_lo, key_hi, value_list)
+    # Si la llave actual está dentro del rango, la agregamos a la lista
+    if key_lo <= root['key'] <= key_hi:
+        al.add_last(value_list, root['value'])
+    # Si la llave actual es menor que el límite superior, revisamos el subárbol derecho
+    if root['key'] < key_hi:
+        values_in_range(root['right'], key_lo, key_hi, value_list)
+    return value_list
 
