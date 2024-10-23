@@ -50,8 +50,7 @@ def new_logic():
                 }
 
     analyzer['crimes'] = al.new_list()
-    # TODO completar la creación del mapa ordenado
-    analyzer['dateIndex'] = None
+    analyzer['dateIndex'] = bst.new_map()  
     
     return analyzer
 
@@ -95,8 +94,8 @@ def update_date_index(map, crime):
     crimedate = datetime.datetime.strptime(occurreddate, '%Y-%m-%d %H:%M:%S')
     entry = bst.get(map, crimedate.date())
     if entry is None:
-        # TODO Realizar el caso en el que no se encuentra la fecha
-        pass
+        datentry = new_data_entry(crime)
+        bst.put(map, crimedate.date(), datentry)
     else:
         datentry = entry
     add_date_index(datentry, crime)
@@ -115,11 +114,11 @@ def add_date_index(datentry, crime):
     offenseIndex = datentry['offenseIndex']
     offentry = lp.get(offenseIndex, crime['OFFENSE_CODE_GROUP'])
     if (offentry is None):
-        # TODO Realice el caso en el que no se encuentre el tipo de crimen
-        pass
+        offentry = new_offense_entry(crime['OFFENSE_CODE_GROUP'], crime)
+        lp.put(offenseIndex, crime['OFFENSE_CODE_GROUP'], offentry)
     else:
-        # TODO Realice el caso en el que se encuentre el tipo de crimen
-        pass
+        offentry = lp.get(offenseIndex, crime['OFFENSE_CODE_GROUP'])
+    al.add_last(offentry['lstoffenses'], crime)
     return datentry
 
 
@@ -162,15 +161,14 @@ def index_height(analyzer):
     """
     Altura del arbol
     """
-    # TODO Completar la función de consulta
-    pass
+    return bst.height(analyzer['dateIndex'])
 
 
 def index_size(analyzer):
     """
     Numero de elementos en el indice
     """
-    # TODO Completar la función de consulta
+    return bst.size(analyzer['dateIndex'])
     pass
 
 
@@ -178,30 +176,36 @@ def min_key(analyzer):
     """
     Llave mas pequena
     """
-    # TODO Completar la función de consulta
-    pass
+    return bst.minKey(analyzer['dateIndex'])
 
 
 def max_key(analyzer):
     """
     Llave mas grande
     """
-    # TODO Completar la función de consulta
-    pass
-
+    return bst.maxKey(analyzer['dateIndex'])
 
 def get_crimes_by_range(analyzer, initialDate, finalDate):
     """
     Retorna el numero de crimenes en un rago de fechas.
     """
-    # TODO Completar la función de consulta
-    pass
+    return bst.values(analyzer['dateIndex'], initialDate, finalDate)
 
 
 def get_crimes_by_range_code(analyzer, initialDate, offensecode):
     """
-    Para una fecha determinada, retorna el numero de crimenes
-    de un tipo especifico.
+    Para una fecha determinada, retorna el número de crímenes
+    de un tipo específico.
     """
-    # TODO Completar la función de consulta
-    pass
+    date_crimes = bst.get(analyzer['dateIndex'], initialDate)
+    if date_crimes is None:
+        return 0  # Si no hay crímenes en esa fecha, retorna 0
+
+    crime_type_map = date_crimes['offenseIndex']
+
+    # Buscar el tipo de crimen especificado por offensecode
+    offense_entry = bst.get(crime_type_map, offensecode)
+
+    if offense_entry is None:
+        return 0  
+    return len(offense_entry['lstoffenses'])

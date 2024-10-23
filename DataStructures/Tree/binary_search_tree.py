@@ -48,6 +48,8 @@ def get(my_bst, key):
         my_bst: El arbol de búsqueda 
         key: La llave asociada a la pareja
     """
+    if my_bst['root'] is None:
+        return None 
     return get_node(my_bst['root'], key)
 
 def get_node(root, key):
